@@ -1,0 +1,3 @@
+/home/dbserver/Documents/Pucrs/intellij/ImageClass/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/dbserver/Documents/Pucrs/intellij/ImageClass/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/dbserver/Documents/Pucrs/intellij/ImageClass/cmake-build-debug/CMakeFiles/ImageClass.dir

@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/ImageClass.dir/ExemploDeManipulacaoDeImagens.cpp.o CMakeFiles/ImageClass.dir/ExemploTexturas.cpp.o CMakeFiles/ImageClass.dir/ImageClass.cpp.o CMakeFiles/ImageClass.dir/Texture.cpp.o CMakeFiles/ImageClass.dir/TextureClass.cpp.o  -o ImageClass 
