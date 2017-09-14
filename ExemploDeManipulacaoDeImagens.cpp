@@ -31,7 +31,7 @@ using namespace std;
 
 ImageClass Image, NewImage, ResetImage;
 
-const int LIMIAR = 120;
+const int LIMIAR = 230;
 #define LARGURA_JAN 1000
 #define ALTURA_JAN 500
 // **********************************************************************
@@ -39,6 +39,8 @@ const int LIMIAR = 120;
 // **********************************************************************
 void ConvertBlackAndWhite()
 {
+    int first = 255;
+    int second = 0;
     unsigned char r,g,b;
     int x,y;
     int i;
@@ -52,9 +54,9 @@ void ConvertBlackAndWhite()
 
             if (i < LIMIAR)
             {
-                NewImage.DrawPixel(x, y,0,0,0);  // exibe um ponto PRETO na imagem
+                NewImage.DrawPixel(x, y,first,first,first);  // exibe um ponto PRETO na imagem
             }
-            else NewImage.DrawPixel(x, y, 255,255,255); // exibe um ponto VERMELHO na imagem
+            else NewImage.DrawPixel(x, y, second,second,second); // exibe um ponto VERMELHO na imagem
 
         }
     }
@@ -238,7 +240,7 @@ void init()
 {
     int r;
     // Carrega a uma image
-    string nome = "Ruido1.bmp";
+    string nome = "images/1Celula/01_Train_DataSet.png";
 //    string nome = "Ruido2.bmp";
 
     string path = "";
