@@ -209,6 +209,73 @@ void MontaVetor(int Px, int Py, int Vetor[9])
 
 }
 // **********************************************************************
+// void RemoverPreto()
+// **********************************************************************
+void RemoverPreto(){
+    cout << "Iniciou RemoverPreto..." << endl;
+    int x,y;
+    int preto = 0;
+
+    int i;
+
+    for(x=0; x<Image.SizeX(); x++){
+        for(y=0; y<Image.SizeY(); y++){
+
+            i = NewImage.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
+            //Image.ReadPixel(x,y,r,g,b);
+
+            if (i == 0){
+               Image.DrawPixel(x, y,preto,preto,preto);  // exibe um ponto PRETO na imagem
+            }
+
+        }
+    }
+
+
+    cout << "Concluiu RemoverPreto..." << endl;
+}
+// **********************************************************************
+// void Sobel() - Filtro Passa Alta()
+// **********************************************************************
+void Sobel(){
+    cout << "Iniciou Sobel..." << endl;
+
+
+    cout << "Concluiu Sobel..." << endl;
+}
+// **********************************************************************
+// void Dilatacao()
+// **********************************************************************
+void Dilatacao(){
+    cout << "Iniciou Dilatacao..." << endl;
+    int x,y;
+    int estrutura[9][9];
+
+    int imagemA[Image.SizeX()][Image.SizeY()], imagemB[Image.SizeX()][Image.SizeY()];
+
+    int branco = 255;
+    int preto = 0;
+
+    int i;
+
+    for(x=0; x<Image.SizeX(); x++){
+        for(y=0; y<Image.SizeY(); y++){
+
+            i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
+
+            if (i < LIMIAR){
+
+//                imagemA[x][y] = first;
+
+            }else imagemA[x][y] = branco;
+
+        }
+    }
+
+
+    cout << "Concluiu Dilatacao..." << endl;
+}
+// **********************************************************************
 // void Mediana()
 // **********************************************************************
 void Mediana()
@@ -360,6 +427,21 @@ void keyboard ( unsigned char key, int x, int y )
         break;
     case 'c':
         SaveImage();
+        glutPostRedisplay();    // obrigatório para redesenhar a tela
+        break;
+    case 'q':
+        RemoverPreto();
+        glutPostRedisplay();    // obrigatório para redesenhar a tela
+        break;
+    case 'e':
+        Mediana();
+        CopyImageNovaToImage();
+        Mediana();
+        CopyImageNovaToImage();
+        Mediana();
+        CopyImageNovaToImage();
+        ConvertBlackAndWhite();
+        RemoverPreto();
         glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
 
