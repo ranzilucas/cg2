@@ -29,9 +29,10 @@ using namespace std;
 
 #include "ImageClass.h"
 
-ImageClass Image, NewImage, ResetImage;
+ImageClass Image, NewImage, ResetImage, ImageResult;
 
 const int LIMIAR = 230;
+float zoom = 0;
 #define LARGURA_JAN 1000
 #define ALTURA_JAN 500
 // **********************************************************************
@@ -140,7 +141,7 @@ void DetectImageBorders()
 // **********************************************************************
 void ConvertToGrayscale()
 {
-    cout << "Iniciou ConvertToGrayscale..." << endl;
+    cout << "Iniciou ConvertToGrayscale..." ;
     int x,y;
     int i;
     for(x=0; x<Image.SizeX(); x++)
@@ -212,7 +213,7 @@ void MontaVetor(int Px, int Py, int Vetor[9])
 // void RemoverPreto()
 // **********************************************************************
 void RemoverPreto(){
-    cout << "Iniciou RemoverPreto..." << endl;
+    cout << "Iniciou RemoverPreto..." ;
     int x,y;
     int preto = 0;
 
@@ -233,6 +234,101 @@ void RemoverPreto(){
 
 
     cout << "Concluiu RemoverPreto..." << endl;
+}
+// **********************************************************************
+// void PreenchimentoArea() - passear imagem
+// **********************************************************************
+
+int CalcularAreaCirculos(int x, int y, ImageClass imageRef, int circleTimes){
+    int acc = 0, step = 0, i = 0, countI = 1;
+    if(imageRef.GetPointIntensity(x, y) != 0){
+
+        while(step < circleTimes){
+            if((x+1) <= imageRef.SizeX() ){
+                x++;
+                if(imageRef.GetPointIntensity(x, y) != 0){
+                    acc++;
+                }
+            }else{acc--;}
+            if((y+1) <= imageRef.SizeY() ){
+                y++;
+                if(imageRef.GetPointIntensity(x, y) != 0){
+                    acc++;
+                }
+            }else{acc--;}
+            for(i=0;i <= countI;i++){
+                if((x-1) >= 0){
+                    x--;
+                    if(imageRef.GetPointIntensity(x, y) != 0){
+                        acc++;
+                    }
+                }else{acc--;}
+            }
+            for(i=0;i <= countI;i++){
+                if((y-1) >= 0 ){
+                    y--;
+                    if(imageRef.GetPointIntensity(x, y) != 0){
+                        acc++;
+                    }
+                }else{acc--;}
+            }
+            for(i=0;i <= countI;i++){
+                if((x+1) <= Image.SizeX() ){
+                    x++;
+                    if(imageRef.GetPointIntensity(x, y) != 0){
+                        acc++;
+                    }
+                }else{acc--;}
+            }
+            countI++;
+            step ++;
+        }
+
+    }
+    //if(acc > 0){cout << acc << " "; } // mostra somas
+
+    return acc;
+}
+// **********************************************************************
+// void PreencherAreaImagem()
+// **********************************************************************
+void PreencherAreaImagem(ImageClass imageRef, int sizeCut, int circleTimes){
+
+    int x, y;
+    int b = 0; // cor que vai ser pintado
+
+    for(x=0; x<imageRef.SizeX(); x++){
+        for(y=0; y<imageRef.SizeY(); y++){
+            if (CalcularAreaCirculos(x,y, imageRef, circleTimes) < sizeCut){
+               imageRef.DrawPixel(x, y, b, b, b);
+            }
+
+        }
+    }
+
+}
+// **********************************************************************
+// void RemoveBorder() -  remove a borda com o tamanho do parametro
+// substituindo por preto
+// **********************************************************************
+void RemoveBorder(ImageClass imageRef, int boaderSize){
+     cout << "Iniciou RemoveBoard...";
+
+    int maxBoarderX = imageRef.SizeX() - boaderSize;
+    int maxBoarderY = imageRef.SizeY() - boaderSize;
+    int x, y;
+    int b = 0; // cor que vai ser pintado
+
+    for(x=0; x<imageRef.SizeX(); x++){
+        for(y=0; y<imageRef.SizeY(); y++){
+            if(x <= boaderSize || x >= maxBoarderX || y <= boaderSize || y >= maxBoarderY){
+               imageRef.DrawPixel(x, y, b, b, b);
+            }
+
+        }
+    }
+
+     cout << "Concluiu RemoveBoard..." << endl;
 }
 // **********************************************************************
 // void Sobel() - Filtro Passa Alta()
@@ -278,9 +374,21 @@ void Dilatacao(){
 // **********************************************************************
 // void Mediana()
 // **********************************************************************
+void ZoomMore(){
+    cout << "Inicializa ZoomMore em " << zoom << "..." <<  endl;
+
+    NewImage.SetZoomH(zoom);
+    NewImage.SetZoomV(zoom);
+    NewImage.Display();
+    zoom += 10;
+    cout << "Concluiu ZoomMore..." << endl;
+}
+// **********************************************************************
+// void Mediana()
+// **********************************************************************
 void Mediana()
 {
-    cout << "Iniciou Mediana..." << endl;
+    cout << "Iniciou Mediana..." ;
 
     int x, y, mediana;
     for(x=0; x<Image.SizeX(); x++)
@@ -301,16 +409,54 @@ void Mediana()
 
 }
 // **********************************************************************
+//  void CalcularResult(void)
+// **********************************************************************
+void CalcularResult(){
+    cout << "Iniciou CalcularResult..." << endl;
+    int falsoPositivo = 0, falsoNegativo = 0, verdadeiroPositivo = 0, totalPixels = 0;
+    //teste de tamanho
+    if(Image.SizeX() != ImageResult.SizeX() ||
+        Image.SizeY() != ImageResult.SizeY()){
+        cout << "IMAGENS COM TAMANHO DIFERENTE." << endl;
+        return;
+    }
+    totalPixels = Image.SizeX() * Image.SizeY();
+    int preto = 0;
+    int x, y, i, r;
+    for(x=0; x<Image.SizeX(); x++){
+        for(y=0; y<Image.SizeY(); y++){
+            i = Image.GetPointIntensity(x,y);
+            r = ImageResult.GetPointIntensity(x,y);
+            if(i != preto){  // diferente de preto
+                if(r != preto) // resultado diferente preto
+                    verdadeiroPositivo ++;
+                else if(r == preto){
+                    falsoPositivo ++;
+                }
+            }else if (i == preto){
+                if (r != preto)
+                    falsoNegativo ++;
+            }
+        }
+    }
+    cout << "Falso Positivo:" << falsoPositivo << endl;
+    cout << "Falso Negativo:" << falsoNegativo << endl;
+    cout << "Verdadeiro Positivo:" << verdadeiroPositivo << endl;
+    cout << "Total Pixels:" << totalPixels << endl;
+    cout << "Concluiu CalcularResult." << endl;
+}
+// **********************************************************************
 //  void init(void)
 // **********************************************************************
 void init()
 {
     int r;
     // Carrega a uma image
-    string nome = "images/1Celula/01_Train_DataSet.png";
+    string resultImage = "01_Train_Mask_DataSet_1.png";
+    string nome = "01_Train_DataSet.png";
 //    string nome = "Ruido2.bmp";
 
-    string path = "";
+    string path = "images/1Celula/";
 // No Code::Blocks para MacOS eh necessario usar um path absoluto
 // string path = "ArquivosCodeBlocks/Imagens/";
 
@@ -321,6 +467,14 @@ void init()
 
     if (!r) exit(1); // Erro na carga da imagem
     else cout << ("Imagem carregada!\n");
+
+    // carregar a imagem para comparar resultados
+    resultImage = path + resultImage;
+    int other;
+    other = ImageResult.Load(resultImage.c_str()); // Carrega uma imagem
+
+    if (!other) exit(1); // Erro na carga da imagem
+    else cout << ("Imagem de Resultados carregada!\n");
 
     // Ajusta o tamnho da imagem da direita, para que ela
     // passe a ter o mesmo tamnho da imagem recem carregada
@@ -385,6 +539,23 @@ void display( void )
     glutSwapBuffers();
 }
 // **********************************************************************
+//  void trabalho - ordem de execucao para o trabalho da disciplina de CG2
+// **********************************************************************
+void Trabalho(){
+        Mediana();
+        CopyImageNovaToImage();
+        Mediana();
+        CopyImageNovaToImage();
+        Mediana();
+        CopyImageNovaToImage();
+        ConvertBlackAndWhite();
+        RemoveBorder(NewImage, 100);
+        PreencherAreaImagem(NewImage, 10, 2);
+        RemoverPreto();
+        CalcularResult();
+
+}
+// **********************************************************************
 //  void keyboard ( unsigned char key, int x, int y )
 // **********************************************************************
 void keyboard ( unsigned char key, int x, int y )
@@ -399,57 +570,48 @@ void keyboard ( unsigned char key, int x, int y )
         break;
     case '2':
         ConvertBlackAndWhite();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'g':
         ConvertToGrayscale();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'b':
         DetectImageBorders();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'i':
         InvertImage();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
      case 'm':
         Mediana();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'z':
         CopyImageNovaToImage();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'x':
         ResetImageNow();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'c':
         SaveImage();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'q':
         RemoverPreto();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
         break;
     case 'e':
-        Mediana();
-        CopyImageNovaToImage();
-        Mediana();
-        CopyImageNovaToImage();
-        Mediana();
-        CopyImageNovaToImage();
-        ConvertBlackAndWhite();
-        RemoverPreto();
-        glutPostRedisplay();    // obrigatório para redesenhar a tela
+        Trabalho();    // obrigatório para redesenhar a tela
         break;
-
+    case 'o':
+        ZoomMore();
+        break;
+    case 'p':
+        PreencherAreaImagem(NewImage, 10, 2);
+        break;
+    case 'l':
+        CalcularResult();
+        break;
     default:
         break;
     }
+    glutPostRedisplay();    // obrigatório para redesenhar a tela
 }
-
 // **********************************************************************
 //  void arrow_keys ( int a_keys, int x, int y )
 // **********************************************************************
@@ -491,6 +653,7 @@ int main ( int argc, char** argv )
     //glutIdleFunc ( display );
 
     glutMainLoop ( );
+
     return 0;
 }
 
