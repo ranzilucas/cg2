@@ -555,6 +555,33 @@ void Trabalho(){
         CalcularResult();
 
 }
+
+void Histogram() {
+  cout << "Iniciou Histogram..." << endl;
+  int x, y, i, statistics[255], histogram[255];
+  for (i = 0; i < 255; i++) {
+    statistics[i] = 0;
+  }
+
+  for(y=0; y <Image.SizeY(); y++){
+    for (x = 0; x < Image.SizeX(); x++){
+        i = Image.GetPointIntensity(x,y); // Le o TOM DE CINZA DA IMAGEM
+        statistics[i] += 1;
+    }
+  }
+
+  cout << "Desenhando Histogram..." << endl;
+  for (i = 0; i < 255; i++) {
+    int lineHeight = statistics[i] % Image.SizeY();
+    cout << "Desenhando até o pixel "<< lineHeight << endl;
+    NewImage.DrawLineV(i, 1, lineHeight, 0, 0, 0);
+
+  }
+
+  cout << "Concluiu Histogram." << endl;
+}
+
+
 // **********************************************************************
 //  void keyboard ( unsigned char key, int x, int y )
 // **********************************************************************
@@ -606,6 +633,9 @@ void keyboard ( unsigned char key, int x, int y )
         break;
     case 'l':
         CalcularResult();
+        break;
+    case 'h':
+        Histogram();
         break;
     default:
         break;
