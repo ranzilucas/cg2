@@ -35,6 +35,97 @@ const int LIMIAR = 230;
 float zoom = 0;
 #define LARGURA_JAN 1000
 #define ALTURA_JAN 500
+
+// **********************************************************************
+//  void Morphology(void) ABERTURA
+// **********************************************************************
+
+void Morphology()
+{
+    cout << "Iniciou Morphologia - Erosao e Dilatacao..." << endl;
+
+    int sizeX = Image.SizeY();
+    int sizeY = Image.SizeY();
+    int x, y;
+    int i;
+    int Vetor[9];
+
+    // EROSAO
+
+    for(x=1; x<sizeX-1; x++)
+    {
+        for(y=1; y<sizeY-1; y++)
+        {
+            i = Image.GetPointIntensity(x, y);
+            if(i == 0)
+            {
+                if(x > 0 && Image.GetPointIntensity(x-1, y) == 255)
+                {
+                    NewImage.DrawPixel(x-1,y,0,0,0);
+                }
+                if(y > 0 && Image.GetPointIntensity(x, y-1) == 255)
+                {
+                    NewImage.DrawPixel(x,y-1,0,0,0);
+                }
+                if (x + 1 < sizeX && Image.GetPointIntensity(x+1, y) == 255)
+                {
+                    NewImage.DrawPixel(x+1,y,0,0,0);
+                }
+                if (y + 1 < sizeY && Image.GetPointIntensity(x, y+1) == 255)
+                {
+                    NewImage.DrawPixel(x,y+1,0,0,0);
+                }
+                NewImage.DrawPixel(x,y,0,0,0);
+            }
+            else
+            {
+                NewImage.DrawPixel(x,y,255,255,255);
+            }
+        }
+    }
+
+
+    NewImage.CopyTo(&Image);
+
+    // DILATACAO
+
+
+    for(x=1; x<sizeX-1; x++)
+    {
+        for(y=1; y<sizeY-1; y++)
+        {
+            i = Image.GetPointIntensity(x, y);
+            if(i == 255)
+            {
+                if(x > 0 && Image.GetPointIntensity(x-1, y) == 0)
+                {
+                    NewImage.DrawPixel(x-1,y,255,255,255);
+                }
+                if(y > 0 && Image.GetPointIntensity(x, y-1) == 0)
+                {
+                    NewImage.DrawPixel(x,y-1,255,255,255);
+                }
+                if (x + 1 < sizeX && Image.GetPointIntensity(x+1, y) == 0)
+                {
+                    NewImage.DrawPixel(x+1,y,255,255,255);
+                }
+                if (y + 1 < sizeY && Image.GetPointIntensity(x, y+1) == 0)
+                {
+                    NewImage.DrawPixel(x,y+1,255,255,255);
+                }
+
+                NewImage.DrawPixel(x,y,255,255,255);
+            }
+            else
+            {
+                NewImage.DrawPixel(x,y,0,0,0);
+            }
+        }
+    }
+
+    cout << "Concluiu Morphologia - Erosao e Dilatacao..." << endl;
+
+}
 // **********************************************************************
 //  void ConvertBlackAndWhite()
 // **********************************************************************
@@ -132,6 +223,58 @@ void DetectImageBorders()
 {
     cout << "Iniciou DetectImageBorders...." << endl;
 
+    unsigned char r,g,b;
+    int x, y, sum, sumX, sumY;
+
+    // SOBEL
+
+    double vertical[3][3] = {
+        1, 0, -1,
+        2, 0, -2,
+        1, 0, -1
+    };
+
+    double horizontal[3][3] = {
+        -1, -2, -1,
+        0,  0,  0,
+        1,  2,  1
+    };
+
+    for(x=1; x<Image.SizeX()-1; x++)
+    {
+        for(y=1; y<Image.SizeY()-1; y++)
+        {
+            Image.ReadPixel(x, y, r, g, b);
+
+            sumX = 0;
+            sumY = 0;
+
+            for(int i = -1; i < 3; i++)
+            {
+                for(int j = -1; j < 3; j++)
+                {
+                    sumX = sumX + vertical[j+1][i+1] * Image.GetPointIntensity(x+j,y+i);
+                }
+            }
+
+            for(int i = -1; i < 3; i++)
+            {
+                for(int j = -1; j < 3; j++)
+                {
+                    sumY = sumY + horizontal[j+1][i+1] * Image.GetPointIntensity(x+j,y+i);
+                }
+            }
+
+            sum = sqrt(pow((double)sumX,2) + pow((double)sumY,2));
+
+            if (sum > 255)
+                NewImage.DrawPixel(x, y, 255, 255, 255);
+            if (sum < 0)
+                NewImage.DrawPixel(x, y, 0, 0, 0);
+        }
+    }
+
+
     cout << "Concluiu DetectImageBorders." << endl;
 
 }
@@ -177,6 +320,66 @@ void InvertImage()
     }
 
     cout << "Concluiu InvertImage." << endl;
+}
+// **********************************************************************
+//  void Smoothing(void)
+// **********************************************************************
+void Smoothing()
+{
+
+    cout << "Iniciou Smoothing..." << endl;
+
+    unsigned char r,g,b;
+    int sizeX = Image.SizeY();
+    int sizeY = Image.SizeY();
+    int x, y;
+
+    double multiplier = 1.0/16.0;
+
+    double filter[3][3] =  {
+        1, 2, 1,
+        2, 4, 2,
+        1, 2, 1,
+
+    };
+
+    for(x=0; x<sizeX; x++)
+    {
+        for(y=0; y<sizeY; y++)
+        {
+            double red = 0.0;
+            double green = 0.0;
+            double blue = 0.0;
+
+            for(int i=-1; i<=1; i++)
+            {
+                for(int j=-1; j<=1; j++)
+                {
+                    int iy = i+y;
+                    int jx = j+x;
+                    Image.ReadPixel(jx, iy, r, g, b);
+                    red = r + red * filter[j+1][i+1] * multiplier;
+                    green = g + green  * filter[j+1][i+1] * multiplier;
+                    blue = b  + blue * filter[j+1][i+1] * multiplier;
+                }
+            }
+
+            if(red>255) red=255;
+            if(green>255) green=255;
+            if(blue>255) blue=255;
+
+            if(red<0) red=0;
+            if(green<0) green=0;
+            if(blue<0) blue=0;
+
+            NewImage.DrawPixel(x, y, red, green, blue);
+
+        }
+    }
+
+    NewImage.CopyTo(&Image);
+
+    cout << "Concluiu Smoothing..." << endl;
 }
 
 void OrdenaVetor(int window[])
@@ -557,9 +760,10 @@ void Trabalho(){
 }
 
 void Histogram() {
+
   cout << "Iniciou Histogram..." << endl;
   int x, y, i, statistics[255], histogram[255];
-  for (i = 0; i < 255; i++) {
+  for (i = 0; i <= 255; i++) {
     statistics[i] = 0;
   }
 
@@ -569,11 +773,12 @@ void Histogram() {
         statistics[i] += 1;
     }
   }
-
+  NewImage.Clear();
   cout << "Desenhando Histogram..." << endl;
-  for (i = 0; i < 255; i++) {
+  for (i = 0; i <= 255; i++) {
     int lineHeight = statistics[i] % Image.SizeY();
-    cout << "Desenhando até o pixel "<< lineHeight << endl;
+    //cout << "Desenhando até o pixel "<< lineHeight << endl;
+    cout << "pixel " << i << " quantidade " << statistics[i] << endl;
     NewImage.DrawLineV(i, 1, lineHeight, 0, 0, 0);
 
   }
@@ -637,6 +842,10 @@ void keyboard ( unsigned char key, int x, int y )
     case 'h':
         Histogram();
         break;
+    case 'y':
+        Smoothing();
+    case 't':
+        Morphology();
     default:
         break;
     }
