@@ -1091,6 +1091,9 @@ void keyboard ( unsigned char key, int x, int y )
         RemoverImagemCor(255,255,255);
         break;
     case '6':
+        CalcularResult();
+        break;
+    case '7':
         Preencher(NewImage, 70);
         break;
 
@@ -1134,9 +1137,7 @@ void keyboard ( unsigned char key, int x, int y )
     case 'p':
         PreencherAreaImagem(NewImage, 10, 2);
         break;
-    case 'l':
-        CalcularResult();
-        break;
+
     case 'h':
         Histogram();
         break;
