@@ -31,7 +31,7 @@ using namespace std;
 
 ImageClass Image, NewImage, ResetImage, ImageResult;
 
-const int LIMIAR = 230;
+//const int LIMIAR = 230;
 float zoom = 0;
 #define LARGURA_JAN 1000
 #define ALTURA_JAN 500
@@ -129,7 +129,7 @@ void Morphology()
 // **********************************************************************
 //  void ConvertBlackAndWhite()
 // **********************************************************************
-void ConvertBlackAndWhite()
+void ConvertBlackAndWhite(int limiar)
 {
     int first = 255;
     int second = 0;
@@ -144,12 +144,45 @@ void ConvertBlackAndWhite()
             i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
             Image.ReadPixel(x,y,r,g,b);
 
-            if (i < LIMIAR)
+            if (i < limiar)
             {
                 NewImage.DrawPixel(x, y,first,first,first);  // exibe um ponto PRETO na imagem
             }
             else NewImage.DrawPixel(x, y, second,second,second); // exibe um ponto VERMELHO na imagem
 
+        }
+    }
+    cout << "Concluiu Black & White." << endl;
+}
+
+
+// **********************************************************************
+//  void ConvertBlackAndWhite()
+// **********************************************************************
+void Separar(int limiar)
+{
+    int first = 255;
+    int second = 0;
+    unsigned char r,g,b;
+    int x,y;
+    int i;
+    cout << "Iniciou Black & White....";
+    for(x=0; x<Image.SizeX(); x++)
+    {
+        for(y=0; y<Image.SizeY(); y++)
+        {
+            i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
+            Image.ReadPixel(x,y,r,g,b);
+
+            if(i == 0){
+                    NewImage.DrawPixel(x, y,255,0,0);  // exibe um ponto PRETO na imagem
+            }else{
+                if (i < limiar)
+                {
+                    NewImage.DrawPixel(x, y,first,first,first);  // exibe um ponto PRETO na imagem
+                }
+                else NewImage.DrawPixel(x, y, second,second,second); // exibe um ponto VERMELHO na imagem
+            }
         }
     }
     cout << "Concluiu Black & White." << endl;
@@ -216,6 +249,22 @@ void ResetImageNow()
     cout << "Concluiu SaveImage." << endl;
 }
 
+void CopyOtherSide(){
+    unsigned char r,g,b;
+    int x,y;
+    int i;
+    cout << "Iniciou SaveImage....";
+    for(x=0; x<Image.SizeX(); x++)
+    {
+        for(y=0; y<Image.SizeY(); y++)
+        {
+            Image.ReadPixel(x,y,r,g,b);
+            NewImage.DrawPixel(x,y,r,g,b);  // copia imagem
+        }
+    }
+    cout << "Concluiu SaveImage." << endl;
+}
+
 // **********************************************************************
 // void DetectImageBorders()
 // **********************************************************************
@@ -266,8 +315,10 @@ void DetectImageBorders()
             }
 
             sum = sqrt(pow((double)sumX,2) + pow((double)sumY,2));
+            if(sum > 0)
+               cout << "TESTE. " << sum << endl;
 
-            if (sum > 255)
+            if (sum > 192)
                 NewImage.DrawPixel(x, y, 255, 255, 255);
             if (sum < 0)
                 NewImage.DrawPixel(x, y, 0, 0, 0);
@@ -276,6 +327,67 @@ void DetectImageBorders()
 
 
     cout << "Concluiu DetectImageBorders." << endl;
+
+}
+
+
+// **********************************************************************
+// void SegmentacaoDescontinuidades()
+// **********************************************************************
+void SegmentacaoDescontinuidades()
+{
+    cout << "Iniciou Segmentacao por Descontinuidades...." << endl;
+
+    int x, y, sum, sumX, sumY;
+    double dx, dy;
+    int a,b, magnitude = 0;
+
+
+    for(x=1; x<Image.SizeX()-1; x++){
+        for(y=1; y<Image.SizeY()-1; y++){
+
+            dx = (Image.GetPointIntensity(x+1, y)-Image.GetPointIntensity(x-1, y))/2;
+
+
+            a = Image.GetPointIntensity(x+1, y-1);
+            b = Image.GetPointIntensity(x-1, y-1);
+            dx += (a-b)/2;
+
+            a = Image.GetPointIntensity(x+1, y+1);
+            b = Image.GetPointIntensity(x-1, y+1);
+            dx += (a-b)/2;
+
+            dx = dx/3;
+
+
+            a = Image.GetPointIntensity(x, y+1);
+            b = Image.GetPointIntensity(x, y-1);
+            dy = (a-b)/2;
+
+
+            a = Image.GetPointIntensity(x+1, y+1);
+            b = Image.GetPointIntensity(x+1, y-1);
+            dy += (a-b)/2;
+
+            a = Image.GetPointIntensity(x-1, y+1);
+            b = Image.GetPointIntensity(x-1, y-1);
+            dy += (a-b)/2;
+
+            dy = dy/3;
+            magnitude = 0;
+            magnitude = sqrt(pow((double)dx,2) + pow((double)dy,2));
+            cout << "magnitude= " << sum << "dx =" << dx << " dy" << dy << endl;
+            dx = 0; dy =0;
+            NewImage.Clear();
+            if (sum > 192)
+                NewImage.DrawPixel(x, y, 255, 255, 255);
+            if (sum < 0)
+                NewImage.DrawPixel(x, y, 0, 0, 0);
+        }
+    }
+
+
+    cout << "Concluiu SegmentacaoDescontinuidades." << endl;
 
 }
 
@@ -438,6 +550,33 @@ void RemoverPreto(){
 
     cout << "Concluiu RemoverPreto..." << endl;
 }
+
+void RemoverImagemCor(int r, int g, int b){
+    cout << "Iniciou RemoverPreto..." ;
+    int x,y;
+    unsigned char rr,rg,rb;
+    int preto = 0;
+
+    int i;
+
+    for(x=0; x<Image.SizeX(); x++){
+        for(y=0; y<Image.SizeY(); y++){
+
+
+            NewImage.ReadPixel(x,y,rr,rg,rb);
+
+            if (rr == r && rg == g && rb == b){
+               Image.DrawPixel(x, y,r,g,b);  // exibe um ponto PRETO na imagem
+            }else{
+               Image.DrawPixel(x, y,preto,preto,preto);  // exibe um ponto PRETO na imagem
+            }
+
+        }
+    }
+
+
+    cout << "Concluiu RemoverPreto..." << endl;
+}
 // **********************************************************************
 // void PreenchimentoArea() - passear imagem
 // **********************************************************************
@@ -547,27 +686,52 @@ void Sobel(){
 // **********************************************************************
 void Dilatacao(){
     cout << "Iniciou Dilatacao..." << endl;
-    int x,y;
+    int x,y, i;
     int estrutura[9][9];
 
     int imagemA[Image.SizeX()][Image.SizeY()], imagemB[Image.SizeX()][Image.SizeY()];
-
+    int sizeX = Image.SizeY();
+    int sizeY = Image.SizeY();
     int branco = 255;
     int preto = 0;
 
-    int i;
 
     for(x=0; x<Image.SizeX(); x++){
         for(y=0; y<Image.SizeY(); y++){
+            i = Image.GetPointIntensity(x, y);
+        }
+    }
 
-            i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
+    for(x=0; x<sizeX-1; x++)
+    {
+        for(y=0; y<Image.SizeY()-1; y++)
+        {
+            i = Image.GetPointIntensity(x, y);
+            if(i == 255)
+            {
+                if(x > 0 && Image.GetPointIntensity(x-1, y) == 0)
+                {
+                    NewImage.DrawPixel(x-1,y,255,255,255);
+                }
+                if(y > 0 && Image.GetPointIntensity(x, y-1) == 0)
+                {
+                    NewImage.DrawPixel(x,y-1,255,255,255);
+                }
+                if (x + 1 < sizeX && Image.GetPointIntensity(x+1, y) == 0)
+                {
+                    NewImage.DrawPixel(x+1,y,255,255,255);
+                }
+                if (y + 1 < sizeY && Image.GetPointIntensity(x, y+1) == 0)
+                {
+                    NewImage.DrawPixel(x,y+1,255,255,255);
+                }
 
-            if (i < LIMIAR){
-
-//                imagemA[x][y] = first;
-
-            }else imagemA[x][y] = branco;
-
+                NewImage.DrawPixel(x,y,255,255,255);
+            }
+            else
+            {
+                NewImage.DrawPixel(x,y,0,0,0);
+            }
         }
     }
 
@@ -655,11 +819,11 @@ void init()
 {
     int r;
     // Carrega a uma image
-    string resultImage = "01_Train_Mask_DataSet_1.png";
-    string nome = "01_Train_DataSet.png";
+    string resultImage = "02_Train_Mask_DataSet_1.png";
+    string nome = "02_Train_DataSet.png";
 //    string nome = "Ruido2.bmp";
 
-    string path = "images/1Celula/";
+    string path = "images/2Celulas/";
 // No Code::Blocks para MacOS eh necessario usar um path absoluto
 // string path = "ArquivosCodeBlocks/Imagens/";
 
@@ -745,14 +909,14 @@ void display( void )
 //  void trabalho - ordem de execucao para o trabalho da disciplina de CG2
 // **********************************************************************
 void Trabalho(){
-        Mediana();
-        CopyImageNovaToImage();
-        Mediana();
-        CopyImageNovaToImage();
-        Mediana();
-        CopyImageNovaToImage();
-        ConvertBlackAndWhite();
-        RemoveBorder(NewImage, 100);
+       // Mediana();
+      //  CopyImageNovaToImage();
+       // Mediana();
+       // CopyImageNovaToImage();
+       // Mediana();
+       // CopyImageNovaToImage();
+        ConvertBlackAndWhite(230);
+        RemoveBorder(NewImage, 70);
         PreencherAreaImagem(NewImage, 10, 2);
         RemoverPreto();
         CalcularResult();
@@ -801,7 +965,33 @@ void keyboard ( unsigned char key, int x, int y )
         exit ( 0 );   // a tecla ESC for pressionada
         break;
     case '2':
-        ConvertBlackAndWhite();
+        Separar(120);
+        break;
+
+    case '3':
+        Separar(130); // nucleo das celulas
+        break;
+    case '4':
+        Separar(179); //removcao
+        break;
+    case '5':
+        RemoverImagemCor(255,255,255);
+        break;
+    case '6':
+        Separar(177);
+        break;
+    case '7':
+        Separar(176);
+        break;
+    case '8':
+        Separar(175);
+        break;
+    case '9':
+        Separar(180);
+        break;
+    case '0':
+        Separar(130); // nucleo das celulas
+        RemoverImagemCor(255,255,255);
         break;
     case 'g':
         ConvertToGrayscale();
@@ -812,6 +1002,9 @@ void keyboard ( unsigned char key, int x, int y )
     case 'i':
         InvertImage();
         break;
+    case 'n':
+        Dilatacao();
+        break;
      case 'm':
         Mediana();
         break;
@@ -820,6 +1013,9 @@ void keyboard ( unsigned char key, int x, int y )
         break;
     case 'x':
         ResetImageNow();
+        break;
+    case 'v':
+        CopyOtherSide();
         break;
     case 'c':
         SaveImage();
@@ -845,7 +1041,7 @@ void keyboard ( unsigned char key, int x, int y )
     case 'y':
         Smoothing();
     case 't':
-        Morphology();
+        SegmentacaoDescontinuidades();
     default:
         break;
     }
