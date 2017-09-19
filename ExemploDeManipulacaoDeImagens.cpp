@@ -186,6 +186,36 @@ void Separar(int limiar)
     }
     cout << "Concluiu Black & White." << endl;
 }
+void SepararCinza(int limiar)
+{
+    int first = 255;
+    int second = 0;
+    unsigned char r,g,b;
+    int x,y;
+    int i;
+    cout << "Iniciou Black & White....";
+    for(x=0; x<Image.SizeX(); x++)
+    {
+        for(y=0; y<Image.SizeY(); y++)
+        {
+            i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
+            Image.ReadPixel(x,y,r,g,b);
+
+            if(i == 0){
+                    NewImage.DrawPixel(x, y,second,second,second);  // exibe um ponto PRETO na imagem
+            }else{
+                if (i < limiar)
+                {
+                    NewImage.DrawPixel(x, y,first,first,first);  // exibe um ponto PRETO na imagem
+                }
+                else NewImage.DrawPixel(x, y, second,second,second); // exibe um ponto VERMELHO na imagem
+            }
+        }
+    }
+    cout << "Concluiu Black & White." << endl;
+}
+
+
 
 // **********************************************************************
 //  void CopyImageNova()
@@ -848,8 +878,8 @@ void init()
 {
     int r;
     // Carrega a uma image
-    string resultImage = "04_Train_Mask_DataSet_1.png";
-    string nome = "04_Train_DataSet.png";
+    string resultImage = "01_Train_Mask_DataSet_1.png";
+    string nome = "01_Train_DataSet.png";
 //    string nome = "Ruido2.bmp";
 
     string path = "images/2Celulas/";
@@ -1002,7 +1032,7 @@ void SepararCortesHistograma(){
             continue;
         }
         //cout << "statistics = " << statistics[i] ;
-        if(limiar[c] != 0 && statistics[i] > (limiar[c] * 5) && statistics[i] > 200){
+        if(limiar[c] != 0 && statistics[i] > (limiar[c] * 7) && statistics[i] > 200){
             limiar[c] = i;
             c ++;
             continue;
@@ -1055,7 +1085,7 @@ void keyboard ( unsigned char key, int x, int y )
         SepararCortesHistograma(); // nucleo das celulas
         break;
     case '4':
-        Separar(179); //removcao
+        SepararCinza(200); //removcao
         break;
     case '5':
         RemoverImagemCor(255,255,255);
