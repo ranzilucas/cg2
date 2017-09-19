@@ -577,50 +577,80 @@ void RemoverImagemCor(int r, int g, int b){
 
     cout << "Concluiu RemoverPreto..." << endl;
 }
+
+void PreencherRecursivo(int x, int y,int maxX, int maxY, int border){
+    int r= 255, g =0, b =0;
+    if(NewImage.GetPointIntensity(x, y) > 160  && x > border && x < maxX && y > border && y < maxY){
+        NewImage.DrawPixel(x, y, r,g,b);
+
+        PreencherRecursivo(x+1,y, maxX, maxY, border);
+        PreencherRecursivo(x+1,y+1, maxX, maxY, border);
+        PreencherRecursivo(x+1,y-1, maxX, maxY, border);
+        PreencherRecursivo(x,y+1, maxX, maxY, border);
+        PreencherRecursivo(x-1,y+1, maxX, maxY, border);
+        PreencherRecursivo(x-1,y-1, maxX, maxY, border);
+        PreencherRecursivo(x-1,y, maxX, maxY, border);
+
+    }
+}
+
+void Preencher(ImageClass imageRef, int intensity){
+
+    cout << "Preencher ..." << endl;
+    int step = 0, i = 0, countI = 1, x, y;
+    int r= 255, g =0, b =0;
+    int border = 50, maxX = imageRef.SizeX() - border, maxY = imageRef.SizeY() - border;
+
+    for(x=border; x<=maxX; x++){
+        for(y=border; y<=maxY; y++){
+            if(NewImage.GetPointIntensity(x, y) > 160){
+                PreencherRecursivo(x,y, maxX, maxY, border);
+                return;
+            }
+        }
+    }
+}
 // **********************************************************************
 // void PreenchimentoArea() - passear imagem
 // **********************************************************************
 
 int CalcularAreaCirculos(int x, int y, ImageClass imageRef, int circleTimes){
     int acc = 0, step = 0, i = 0, countI = 1;
+
+    int border = 50, maxX = imageRef.SizeX() - border, maxY = imageRef.SizeY() - border;
     if(imageRef.GetPointIntensity(x, y) != 0){
 
-        while(step < circleTimes){
-            if((x+1) <= imageRef.SizeX() ){
-                x++;
-                if(imageRef.GetPointIntensity(x, y) != 0){
+        while(step < circleTimes && x > border && x < maxX && y > border && y < maxY){
+
+                if(imageRef.GetPointIntensity(++x, y) != 0){
                     acc++;
                 }
-            }else{acc--;}
-            if((y+1) <= imageRef.SizeY() ){
-                y++;
-                if(imageRef.GetPointIntensity(x, y) != 0){
+
+                if(imageRef.GetPointIntensity(x, ++y) != 0){
                     acc++;
                 }
-            }else{acc--;}
+
             for(i=0;i <= countI;i++){
-                if((x-1) >= 0){
-                    x--;
-                    if(imageRef.GetPointIntensity(x, y) != 0){
+
+                    if(imageRef.GetPointIntensity(--x, y) != 0){
                         acc++;
                     }
-                }else{acc--;}
+
             }
             for(i=0;i <= countI;i++){
-                if((y-1) >= 0 ){
-                    y--;
-                    if(imageRef.GetPointIntensity(x, y) != 0){
+
+
+                    if(imageRef.GetPointIntensity(x, --y) != 0){
                         acc++;
                     }
-                }else{acc--;}
+
             }
             for(i=0;i <= countI;i++){
-                if((x+1) <= Image.SizeX() ){
-                    x++;
-                    if(imageRef.GetPointIntensity(x, y) != 0){
+
+                    if(imageRef.GetPointIntensity(++x, y) != 0){
                         acc++;
                     }
-                }else{acc--;}
+
             }
             countI++;
             step ++;
@@ -978,7 +1008,7 @@ void keyboard ( unsigned char key, int x, int y )
         RemoverImagemCor(255,255,255);
         break;
     case '6':
-        Separar(177);
+        Preencher(NewImage, 70);
         break;
     case '7':
         Separar(176);
