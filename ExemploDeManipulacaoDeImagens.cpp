@@ -40,6 +40,9 @@ float zoom = 0;
 //  void Morphology(void) ABERTURA
 // **********************************************************************
 
+
+
+
 void Morphology()
 {
     cout << "Iniciou Morphologia - Erosao e Dilatacao..." << endl;
@@ -126,6 +129,52 @@ void Morphology()
     cout << "Concluiu Morphologia - Erosao e Dilatacao..." << endl;
 
 }
+
+void Erosao(){
+     cout << "Iniciou Morphologia - Erosao e Dilatacao..." << endl;
+
+    int sizeX = Image.SizeY();
+    int sizeY = Image.SizeY();
+    int x, y;
+    int i;
+    int Vetor[9];
+
+    // EROSAO
+
+    for(x=1; x<sizeX-1; x++)
+    {
+        for(y=1; y<sizeY-1; y++)
+        {
+            i = Image.GetPointIntensity(x, y);
+            if(i == 0)
+            {
+                if(x > 0 && Image.GetPointIntensity(x-1, y) == 255)
+                {
+                    NewImage.DrawPixel(x-1,y,0,0,0);
+                }
+                if(y > 0 && Image.GetPointIntensity(x, y-1) == 255)
+                {
+                    NewImage.DrawPixel(x,y-1,0,0,0);
+                }
+                if (x + 1 < sizeX && Image.GetPointIntensity(x+1, y) == 255)
+                {
+                    NewImage.DrawPixel(x+1,y,0,0,0);
+                }
+                if (y + 1 < sizeY && Image.GetPointIntensity(x, y+1) == 255)
+                {
+                    NewImage.DrawPixel(x,y+1,0,0,0);
+                }
+                NewImage.DrawPixel(x,y,0,0,0);
+            }
+            else
+            {
+                NewImage.DrawPixel(x,y,255,255,255);
+            }
+        }
+    }
+
+
+}
 // **********************************************************************
 //  void ConvertBlackAndWhite()
 // **********************************************************************
@@ -160,8 +209,8 @@ void ConvertBlackAndWhite(int limiar)
 // **********************************************************************
 void Separar(int limiar)
 {
-    int first = 255;
-    int second = 0;
+    int first = 0;
+    int second = 255;
     unsigned char r,g,b;
     int x,y;
     int i;
@@ -174,7 +223,7 @@ void Separar(int limiar)
             Image.ReadPixel(x,y,r,g,b);
 
             if(i == 0){
-                    NewImage.DrawPixel(x, y,255,0,0);  // exibe um ponto PRETO na imagem
+                    NewImage.DrawPixel(x, y,0,0,0);  // exibe um ponto PRETO na imagem
             }else{
                 if (i < limiar)
                 {
@@ -215,7 +264,30 @@ void SepararCinza(int limiar)
     cout << "Concluiu Black & White." << endl;
 }
 
+void CopyImageNovaToImage2()
+{
+    unsigned char r,g,b;
+    unsigned char rr,rg,rb;
+    int x,y;
+    int i;
+    cout << "Iniciou CopyImageNova....";
+    for(x=0; x<NewImage.SizeX(); x++)
+    {
+        for(y=0; y<NewImage.SizeY(); y++)
+        {
+            NewImage.ReadPixel(x,y,r,g,b);
+            ImageResult.ReadPixel(x,y,rr,rg,rb);
 
+            if(r == 255 && g == 0 && b == 0)
+            Image.DrawPixel(x,y,255,255,255);  // copia imagem
+            else if (r == 255 && g == 255 && b == 255)
+                Image.DrawPixel(x,y,0,0,0);  // copia imagem
+            else
+            Image.DrawPixel(x,y,rr,rg,rb);  // copia imagem
+        }
+    }
+    cout << "Concluiu CopyImageNova." << endl;
+}
 
 // **********************************************************************
 //  void CopyImageNova()
@@ -301,65 +373,10 @@ void DetectImageBorders()
 {
     cout << "Iniciou DetectImageBorders...." << endl;
 
-    unsigned char r,g,b;
-    int x, y, sum, sumX, sumY;
-
-    // SOBEL
-
-    double vertical[3][3] = {
-        1, 0, -1,
-        2, 0, -2,
-        1, 0, -1
-    };
-
-    double horizontal[3][3] = {
-        -1, -2, -1,
-        0,  0,  0,
-        1,  2,  1
-    };
-
-    for(x=1; x<Image.SizeX()-1; x++)
-    {
-        for(y=1; y<Image.SizeY()-1; y++)
-        {
-            Image.ReadPixel(x, y, r, g, b);
-
-            sumX = 0;
-            sumY = 0;
-
-            for(int i = -1; i < 3; i++)
-            {
-                for(int j = -1; j < 3; j++)
-                {
-                    sumX = sumX + vertical[j+1][i+1] * Image.GetPointIntensity(x+j,y+i);
-                }
-            }
-
-            for(int i = -1; i < 3; i++)
-            {
-                for(int j = -1; j < 3; j++)
-                {
-                    sumY = sumY + horizontal[j+1][i+1] * Image.GetPointIntensity(x+j,y+i);
-                }
-            }
-
-            sum = sqrt(pow((double)sumX,2) + pow((double)sumY,2));
-            if(sum > 0)
-               cout << "TESTE. " << sum << endl;
-
-            if (sum > 192)
-                NewImage.DrawPixel(x, y, 255, 255, 255);
-            if (sum < 0)
-                NewImage.DrawPixel(x, y, 0, 0, 0);
-        }
-    }
-
 
     cout << "Concluiu DetectImageBorders." << endl;
 
 }
-
-
 // **********************************************************************
 // void SegmentacaoDescontinuidades()
 // **********************************************************************
@@ -367,16 +384,13 @@ void SegmentacaoDescontinuidades()
 {
     cout << "Iniciou Segmentacao por Descontinuidades...." << endl;
 
-    int x, y, sum, sumX, sumY;
+    int x, y, sum, sumX, sumY, a,b, magnitude = 0;
     double dx, dy;
-    int a,b, magnitude = 0;
-
 
     for(x=1; x<Image.SizeX()-1; x++){
         for(y=1; y<Image.SizeY()-1; y++){
 
             dx = (Image.GetPointIntensity(x+1, y)-Image.GetPointIntensity(x-1, y))/2;
-
 
             a = Image.GetPointIntensity(x+1, y-1);
             b = Image.GetPointIntensity(x-1, y-1);
@@ -414,8 +428,6 @@ void SegmentacaoDescontinuidades()
                 NewImage.DrawPixel(x, y, 0, 0, 0);
         }
     }
-
-
     cout << "Concluiu SegmentacaoDescontinuidades." << endl;
 
 }
@@ -735,9 +747,54 @@ void RemoveBorder(ImageClass imageRef, int boaderSize){
 // void Sobel() - Filtro Passa Alta()
 // **********************************************************************
 void Sobel(){
-    cout << "Iniciou Sobel..." << endl;
+    cout << "Iniciou Sobel...";
+
+    unsigned char r,g,b;
+    int x, y, sum, sumX, sumY,i;
+    //Mascara Sobel vertical
+    double vertical[3][3] = {
+        1, 0, -1,
+        2, 0, -2,
+        1, 0, -1
+    };
+    //Mascara Sobel horizontal
+    double horizontal[3][3] = {
+        -1, -2, -1,
+        0,  0,  0,
+        1,  2,  1
+    };
+
+    for(x=1; x<Image.SizeX()-1; x++){
+        for(y=1; y<Image.SizeY()-1; y++){
+            Image.ReadPixel(x, y, r, g, b);
+
+            sumX = 0;
+            sumY = 0;
+
+            for(int i = -1; i < 3; i++){
+                for(int j = -1; j < 3; j++){
+                    sumX = sumX + vertical[j+1][i+1] * Image.GetPointIntensity(x+j,y+i);
+                }
+            }
+
+            for(int i = -1; i < 3; i++){
+                for(int j = -1; j < 3; j++){
+                    sumY = sumY + horizontal[j+1][i+1] * Image.GetPointIntensity(x+j,y+i);
+                }
+            }
+
+            sum = sqrt(pow((double)sumX,2) + pow((double)sumY,2));
+            if(sum > 0)
+               cout << "TESTE. " << sum << endl;
+
+            if (sum > 255)
+                NewImage.DrawPixel(x, y, 255, 255, 255);
+            else
+                NewImage.DrawPixel(x, y, 0, 0, 0);
 
 
+        }
+    }
     cout << "Concluiu Sobel..." << endl;
 }
 // **********************************************************************
@@ -985,10 +1042,11 @@ void Trabalho(){
 void Histogram() {
 
   cout << "Iniciou Histogram..." << endl;
-  int x, y, i, statistics[255], histogram[255];
-  for (i = 0; i <= 255; i++) {
+  int x, y, i, statistics[255];
+
+  //clear variavel
+  for (i = 0; i <= 255; i++)
     statistics[i] = 0;
-  }
 
   for(y=0; y <Image.SizeY(); y++){
     for (x = 0; x < Image.SizeX(); x++){
@@ -996,20 +1054,18 @@ void Histogram() {
         statistics[i] += 1;
     }
   }
-  NewImage.Clear();
+
+  NewImage.Clear(); //limpa tela
   cout << "Desenhando Histogram..." << endl;
   for (i = 0; i <= 255; i++) {
     int lineHeight = statistics[i] % Image.SizeY();
     //cout << "Desenhando até o pixel "<< lineHeight << endl;
     cout << "pixel " << i << " quantidade " << statistics[i] << endl;
     NewImage.DrawLineV(i, 1, lineHeight, 0, 0, 0);
-
   }
 
   cout << "Concluiu Histogram." << endl;
-
 }
-
 
 void SepararCortesHistograma(){
 
@@ -1077,8 +1133,24 @@ void keyboard ( unsigned char key, int x, int y )
         Image.Delete();
         exit ( 0 );   // a tecla ESC for pressionada
         break;
-    case '2':
-        Separar(120);
+    case '1':
+        Trabalho();
+        SaveImage();
+        Separar(180);
+        CopyImageNovaToImage();
+        Erosao();
+        CopyImageNovaToImage();
+        Erosao();
+        CopyImageNovaToImage();
+        Erosao();
+        CopyImageNovaToImage();
+        Erosao();
+        CopyImageNovaToImage();
+        Preencher(NewImage, 70);
+        CopyImageNovaToImage2();
+        break;
+    case 'w':
+        Erosao();
         break;
 
     case '3':
@@ -1096,18 +1168,19 @@ void keyboard ( unsigned char key, int x, int y )
     case '7':
         Preencher(NewImage, 70);
         break;
+    case '8':
+        CopyImageNovaToImage2();
+        break;
 
     case '0':
         Separar(130); // nucleo das celulas
         RemoverImagemCor(255,255,255);
         break;
-    case 'g':
-        ConvertToGrayscale();
         break;
-    case 'b':
-        DetectImageBorders();
+    case 's':
+        Sobel(); //Utiliza o sobel
         break;
-    case 'n':
+    case 'k':
         Dilatacao();
         break;
      case 'm':
@@ -1125,23 +1198,19 @@ void keyboard ( unsigned char key, int x, int y )
     case 'c':
         SaveImage();
         break;
-    case 'q':
+    case 'l':
         RemoverPreto();
         break;
     case 'e':
         Trabalho();    // obrigatório para redesenhar a tela
         break;
-    case 'o':
-        ZoomMore();
-        break;
-    case 'p':
+    case 'i':
         PreencherAreaImagem(NewImage, 10, 2);
         break;
-
-    case 'h':
+    case 'o':
         Histogram();
         break;
-    case 't':
+    case 'p':
         SegmentacaoDescontinuidades();
     default:
         break;
