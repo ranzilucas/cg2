@@ -848,8 +848,8 @@ void init()
 {
     int r;
     // Carrega a uma image
-    string resultImage = "02_Train_Mask_DataSet_1.png";
-    string nome = "02_Train_DataSet.png";
+    string resultImage = "04_Train_Mask_DataSet_1.png";
+    string nome = "04_Train_DataSet.png";
 //    string nome = "Ruido2.bmp";
 
     string path = "images/2Celulas/";
@@ -940,12 +940,12 @@ void display( void )
 void Trabalho(){
         Mediana();
         CopyImageNovaToImage();
-       // Mediana();
-       // CopyImageNovaToImage();
+        Mediana();
+        CopyImageNovaToImage();
        // Mediana();
        // CopyImageNovaToImage();
         ConvertBlackAndWhite(230);
-        RemoveBorder(NewImage, 70);
+        RemoveBorder(NewImage, 50);
         PreencherAreaImagem(NewImage, 10, 2);
         RemoverPreto();
         CalcularResult();
@@ -998,18 +998,21 @@ void SepararCortesHistograma(){
 
     for(i=1;i<=255;i++){
         if(limiar[c] == 0) {
-            limiar[c] = statistics[i];
+            limiar[c] = i;
             continue;
         }
         //cout << "statistics = " << statistics[i] ;
-        if(limiar[c] != 0 && statistics[i] > (limiar[c] * 5) ){
+        if(limiar[c] != 0 && statistics[i] > (limiar[c] * 5) && statistics[i] > 200){
             limiar[c] = i;
             c ++;
             continue;
         }
     }
 
-    cout << "Iniciou SepararCortesHistograma....";
+    cout << "Iniciou SepararCortesHistograma .... dividiu em = " << (c +1) << endl;
+    for(d=0; d <= c; d++){
+    cout << limiar[d] << ", ";
+    }
     for(x=0; x<Image.SizeX(); x++){
         for(y=0; y<Image.SizeY(); y++){
             i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
@@ -1020,8 +1023,8 @@ void SepararCortesHistograma(){
                 for(d=0; d <= c; d++){
 
                     if (i >= limiar[d] && i <= limiar[d+1]){
-                        cout << " limiar d:" << limiar[d] << " d+1: " << limiar[d+1] << " valor i:" << i << endl;
-                        NewImage.DrawPixel(x, y,15*d,5*d,7*d);  // exibe um ponto PRETO na imagem
+                        //cout << " limiar d:" << limiar[d] << " d+1: " << limiar[d+1] << " valor i:" << i << endl;
+                        NewImage.DrawPixel(x, y,51*d,51*d,51*d);  // exibe um ponto PRETO na imagem
                     }
                 }
             }
