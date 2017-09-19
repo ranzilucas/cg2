@@ -155,7 +155,6 @@ void ConvertBlackAndWhite(int limiar)
     cout << "Concluiu Black & White." << endl;
 }
 
-
 // **********************************************************************
 //  void ConvertBlackAndWhite()
 // **********************************************************************
@@ -939,8 +938,8 @@ void display( void )
 //  void trabalho - ordem de execucao para o trabalho da disciplina de CG2
 // **********************************************************************
 void Trabalho(){
-       // Mediana();
-      //  CopyImageNovaToImage();
+        Mediana();
+        CopyImageNovaToImage();
        // Mediana();
        // CopyImageNovaToImage();
        // Mediana();
@@ -978,9 +977,60 @@ void Histogram() {
   }
 
   cout << "Concluiu Histogram." << endl;
+
 }
 
 
+void SepararCortesHistograma(){
+
+    int x, y, i, statistics[255], limiar[10] = {5,0,0,0,0,0,0,0,0,0};
+    int first = 255, second = 0, c = 1, d = 0;
+    // limpar memoria
+    for (i = 0; i <= 255; i++) {
+        statistics[i] = 0;
+    }
+    // fazer histograma
+    for(y=0; y <Image.SizeY(); y++)
+        for (x = 0; x < Image.SizeX(); x++){
+            i = Image.GetPointIntensity(x,y); // Le o TOM DE CINZA DA IMAGEM
+            statistics[i] += 1;
+        }
+
+    for(i=1;i<=255;i++){
+        if(limiar[c] == 0) {
+            limiar[c] = statistics[i];
+            continue;
+        }
+        //cout << "statistics = " << statistics[i] ;
+        if(limiar[c] != 0 && statistics[i] > (limiar[c] * 5) ){
+            limiar[c] = i;
+            c ++;
+            continue;
+        }
+    }
+
+    cout << "Iniciou SepararCortesHistograma....";
+    for(x=0; x<Image.SizeX(); x++){
+        for(y=0; y<Image.SizeY(); y++){
+            i = Image.GetPointIntensity(x,y); // VERIFICA O TOM DE CINZA DA IMAGEM
+
+            if(i == 0)
+                NewImage.DrawPixel(x, y,0,0,0);  // exibe um ponto PRETO na imagem
+            else{
+                for(d=0; d <= c; d++){
+
+                    if (i >= limiar[d] && i <= limiar[d+1]){
+                        cout << " limiar d:" << limiar[d] << " d+1: " << limiar[d+1] << " valor i:" << i << endl;
+                        NewImage.DrawPixel(x, y,15*d,5*d,7*d);  // exibe um ponto PRETO na imagem
+                    }
+                }
+            }
+        }
+    }
+    cout << "Concluiu SepararCortesHistograma." << endl;
+
+
+}
 // **********************************************************************
 //  void keyboard ( unsigned char key, int x, int y )
 // **********************************************************************
@@ -999,7 +1049,7 @@ void keyboard ( unsigned char key, int x, int y )
         break;
 
     case '3':
-        Separar(130); // nucleo das celulas
+        SepararCortesHistograma(); // nucleo das celulas
         break;
     case '4':
         Separar(179); //removcao
@@ -1010,15 +1060,7 @@ void keyboard ( unsigned char key, int x, int y )
     case '6':
         Preencher(NewImage, 70);
         break;
-    case '7':
-        Separar(176);
-        break;
-    case '8':
-        Separar(175);
-        break;
-    case '9':
-        Separar(180);
-        break;
+
     case '0':
         Separar(130); // nucleo das celulas
         RemoverImagemCor(255,255,255);
@@ -1028,9 +1070,6 @@ void keyboard ( unsigned char key, int x, int y )
         break;
     case 'b':
         DetectImageBorders();
-        break;
-    case 'i':
-        InvertImage();
         break;
     case 'n':
         Dilatacao();
@@ -1068,8 +1107,6 @@ void keyboard ( unsigned char key, int x, int y )
     case 'h':
         Histogram();
         break;
-    case 'y':
-        Smoothing();
     case 't':
         SegmentacaoDescontinuidades();
     default:
